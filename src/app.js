@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-
-// const { uuid } = require("uuidv4");
+const { uuid } = require("uuidv4");
 
 const app = express();
 
@@ -10,24 +9,77 @@ app.use(cors());
 
 const repositories = [];
 
-app.get("/repositories", (request, response) => {
-  // TODO
+app.get('/repositories', (request, response) => {
+  return response.json(repositories)
+})
+
+app.post('/repositories', (request, response) => {
+  const { url, title, techs, likes } = request.body
+  
+  const repositorie = {
+    id:  uuid(),
+    url,
+    title,
+    techs,
+    likes,
+  }
+  
+  repositories.push(repositorie)
+  return response.json(repositorie)
+})
+
+app.put('/repositories/:id', (request, response) => {
+  const { id } = request.params
+  const { url, title, techs } = request.body
+  
+  const repoIndex = repositories.findIndex(repo => repo.id === id)
+
+  if (!repoIndex < 0) {
+    return response.status(400).json({error:'Repositório não encontrado'})
+  }
+
+  if (url) {
+    repositories[repoIndex].url = url  
+  }
+
+  if (title) {
+    repositories[repoIndex].title = title
+  }
+
+  if (techs) {
+    repositories[repoIndex].techs = techs
+  }
+
+  return response.json(repositories[repoIndex])
+})
+
+app.delete('/repositories/:id', (request, response) => {
+  const { id } = request.params
+  
+  const repoIndex = repositories.findIndex(repo => repo.id === id)
+
+  if (!repoIndex < 0) {
+    return response.status(400).json({error:'Repositório não encontrado'})
+  }
+
+  repositories.splice(repoIndex, 1)
+
+  return response.json()
 });
 
-app.post("/repositories", (request, response) => {
-  // TODO
-});
+app.put('/repositories/:id/likes', (request, response) => {
+  const { id } = request.params
 
-app.put("/repositories/:id", (request, response) => {
-  // TODO
-});
+  const repoIndex = repositories.findIndex(repo => repo.id === id)
 
-app.delete("/repositories/:id", (request, response) => {
-  // TODO
-});
+  if (!repoIndex < 0) {
+    return response.status(400).json({error:'Repositório não encontrado'})
+  }
+  
+  repositories[repoIndex].likes = repositories[repoIndex].likes + 1
 
-app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+  return response.json(repositories[repoIndex])
+
 });
 
 module.exports = app;
